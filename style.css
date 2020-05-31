@@ -1,0 +1,17 @@
+*{
+    margin-top: 10px;
+}
+.navbar {
+    background-color: #adb5bd;
+    justify-content: center;
+}
+
+nav.timeClock{
+    text-align: end;
+}
+
+.flex-container {
+    display: flex;
+    align-items: flex-end;
+    
+}
