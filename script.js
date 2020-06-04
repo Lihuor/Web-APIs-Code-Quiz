@@ -1,100 +1,167 @@
-var quizContainer = document.getElementsByClassName("quiz-container");
-var playButton = document.getElementById("playButton");
-var minutesDisplay = document.getElementById("minutes");
-var secondsDisplay = document.getElementById("seconds");
+var answerOne = document.getElementById("answerOne");
+var answerTwo = document.getElementById("answerTwo");
+var answerThree = document.getElementById("answerThree");
+var answerFour = document.getElementById("answerFour");
+var timer = document.querySelector("#time");
+var messageDiv = document.querySelector("#message");
+var i = 0;
+var score = 0;
+var secondsLeft = 180;
+var storedScores;
+var scoreList = [];
+
+
+var correctSound = new Audio("assets/audio/correctAudio.wav");
+
+var incorrectSound = new Audio("assets/audio/incorrectAudio.mp3");
 
 
 
 
-var score = 0
-var currentQuestion = -1;
-var timerLapse = 0;
-var interval;
+function setTime() {
+    var timerInterval = setInterval(function () {
+        secondsLeft--;
+        timer.textContent = "Timer " + secondsLeft;
 
-//starts the countdown timer once user clicks the 'start' button
-function beginQuiz() {
-
-    timerLapse = 10;
-    document.getElementById("timerLapse").innerHTML = timerLapse;
-
-    timer = setInterval(function() {
-        timerLapse--;
-        document.getElementById("timerLapse").innerHTML = timerLapse;
-//proceed to end the game function when timer is below 0 at any time
-        if (timerLapse <= 0) {
-            clearInterval(timer);
-            endGame(); 
+        if (secondsLeft === 0) {
+            clearInterval(timerInterval);
+            alert("Out of Time");
+            questionEnder();
         }
-    }, 1000);
 
-    next();
+        else if (i === questions.length) {
+            clearInterval(timerInterval);
+        }
+    }, 1000)
+    return (score)
 }
-// Questions
-var questions = [
-    {
-        question: "What does HTML stand for?",
-        answers: ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup Language"],
-        correctAnswer: "Hyper Text Markup Language"
-    },
+function questionEnder() {
 
-    {
-        question: "Who is making the Web standards?",
-        answers: ["Mozilla", "Google", "The World Wide Web Consortium", "Microsoft"],
-        correctAnswer: "The World Wide Web Consortium"
-    },
+    var scoreTag = document.createElement("h1");
+    var inputTag = document.createElement("input");
+    var submitButton = document.createElement("button");
+    score += secondsLeft * .1;
+    score = score.toFixed(2);
+    document.getElementById("question").textContent = "All Done!";
+    answerOne.remove();
+    answerTwo.remove();
+    answerThree.remove();
+    answerFour.remove();
+    document.body.children[1].appendChild(scoreTag);
+    document.getElementsByTagName("h1")[0].setAttribute("id", "score");
+    document.getElementById("score").textContent = "Your Score: " + score;
+    document.body.children[1].appendChild(inputTag);
+    document.getElementsByTagName("input")[0].setAttribute("id", "input-field");
+    submitButton.textContent = "Submit";
+    document.body.children[1].appendChild(submitButton);
+    submitButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        var highScoreText = new Object();
+        highScoreText.name = inputTag.value.trim();
+        highScoreText.newScore = score;
+        storeScores(highScoreText);
+        window.location.href = "highScores.html";
+    });
+}
+function questionSetter() {
 
-    {
-        question: "Choose the correct HTML element for the largest heading:",
-        answers: ["<heading>", "<h1>", "<h6>", "head"],
-        correctAnswer: "<h1>"
-    },
+    answerOne.hidden = false;
+    answerTwo.hidden = false;
+    answerThree.hidden = false;
+    answerFour.hidden = false;
 
-    {
-        question: "What is the correct HTML element for inserting a line break?",
-        answers: ["<lb>", "<break>", "<br>"],
-        correctAnswer: "<br>"
-    },
+    document.getElementById("startButton").hidden = true;
+    if (i === questions.length) {
+        questionEnder();
+    }
+    else {
+        document.getElementById("question").textContent = questions[i]["title"];
+        document.getElementById("answerOne").textContent = questions[i]["choices"][0];
+        document.getElementById("answerTwo").textContent = questions[i]["choices"][1];
+        document.getElementById("answerThree").textContent = questions[i]["choices"][2];
+        document.getElementById("answerFour").textContent = questions[i]["choices"][3];
+    }
+}
 
-    {
-        question: "What does CSS stand for?",
-        answers: ["Colorful Style Sheets", "Creative Style Sheets", "Computer Style Sheets", "Cascading Style Sheet"],
-        correctAnswer: "Cascading Style Sheet"
-    },
+function storeScores(highScoreText) {
+    tempArray = JSON.parse(localStorage.getItem("scores"));
+    if (tempArray === null) {
+        scoreList.push(highScoreText);
+        localStorage.setItem("scores", JSON.stringify(scoreList));
+    }
+    else {
+        tempArray.push(highScoreText);
+        localStorage.setItem("scores", JSON.stringify(tempArray));
+    }
+}
 
-    {
-        question: "Where in an HTML document is the correct place to refer to an external style sheet?",
-        answers: ["In the <body> section", "At the end of the document", "In the <head> sections"],
-        correctAnswer: "In the <head> sections"
-    },
+document.getElementById("startButton").addEventListener("click", questionSetter);
+document.getElementById("startButton").addEventListener("click", setTime);
+document.getElementById("startButton").addEventListener("click", function () {
+    messageDiv.textContent = "";
+});
 
-    {
-        question: "Which HTML attribute is used to define inline styles?",
-        answers: ["font","style", "class", "styles"],
-        correctAnswer: "style"
-    },
+answerOne.hidden = true;
+answerTwo.hidden = true;
+answerThree.hidden = true;
+answerFour.hidden = true;
 
-    {
-        question: "Which HTML attribute is used to define inline styles?",
-        answers: ["bgcolor", "background-color", "color"],
-        correctAnswer: "background-color"
-    },
+document.getElementById("answerOne").addEventListener("click", function () {
+    if (questions[i]["choices"][0] === questions[i]["answer"]) {
+        messageDiv.textContent = "Correct!";
+        score++;
+        correctSound.play();
+    }
+    else {
+        messageDiv.textContent = "Wrong!";
+        secondsLeft -= 10;
+        incorrectSound.play();
+    }
+    i++;
+    questionSetter();
+})
 
-    {
-        question: "Where is the correct place to insert a JavaScript?",
-        answers: ["The <body> section", "The <head> section", "Both the <head> section and the <body> section are correct"],
-        correctAnswer: "The <head> section"
-    },
+document.getElementById("answerTwo").addEventListener("click", function () {
+    if (questions[i]["choices"][1] === questions[i]["answer"]) {
+        messageDiv.textContent = "Correct!";
+        score++;
+        correctSound.play();
+    }
+    else {
+        messageDiv.textContent = "Wrong!";
+        secondsLeft -= 10;
+        incorrectSound.play();
+    }
+    i++;
+    questionSetter();
+})
 
-    {
-        question: "How do you create a function in JavaScript?",
-        answers: ["function = myFunction()", "function:myFunction", "function myFunction"],
-        correctAnswer: "function = myFunction()"
-    },
-    ]
+document.getElementById("answerThree").addEventListener("click", function () {
+    if (questions[i]["choices"][2] === questions[i]["answer"]) {
+        messageDiv.textContent = "Correct!";
+        score++;
+        correctSound.play();
+    }
+    else {
+        messageDiv.textContent = "Wrong!";
+        secondsLeft -= 10;
+        incorrectSound.play();
+    }
+    i++;
+    questionSetter();
+})
 
-
-
-
-
-document.getElementsByClassName("quiz-container").innerHTML = quizContainer
-console.log(questions);
+document.getElementById("answerFour").addEventListener("click", function () {
+    if (questions[i]["choices"][3] === questions[i]["answer"]) {
+        messageDiv.textContent = "Correct!";
+        score++;
+        correctSound.play();
+    }
+    else {
+        messageDiv.textContent = "Wrong!";
+        secondsLeft -= 10;
+        incorrectSound.play();
+    }
+    i++;
+    questionSetter();
+})
